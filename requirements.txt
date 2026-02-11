@@ -1,0 +1,11 @@
+# add more as we move along
+# Data & Config
+pydantic>=2.0.0
+python-dotenv>=1.0.0
+pyyaml>=6.0.0
+
+# AI / LLM
+openai>=1.0.0
+
+# Utilities
+loguru>=0.7.0
