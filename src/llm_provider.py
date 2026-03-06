@@ -1,55 +1,50 @@
-from __future__ import annotations
 import os
-from dataclasses import dataclass
-from typing import Any, Dict, List
+import random
 
-@dataclass
-class LLMProvider:
-    provider: str
-    model: str
+class MockLLM:
+    """
+    A mock language model used for testing.
+    Returns simple structured responses without requiring an API key.
+    """
 
-    @staticmethod
-    def from_env_or_config(cfg: Dict[str, Any]) -> "LLMProvider":
-        provider = os.getenv("LLM_PROVIDER") or cfg.get("llm_provider", "mock")
-        model = os.getenv("LLM_MODEL") or cfg.get("llm_model", "mock-001")
-        return LLMProvider(provider=provider, model=model)
-
-    def complete(
-        self,
-        system: str,
-        messages: List[Dict[str, str]],
-        user: str,
-        refusal_prompt: str,
-        mode: str = "normal",
-    ) -> str:
+    def generate(self, messages):
         """
-        Swap this with a real provider call.
-        Keep the signature stable so students only change this file.
+        Simulate a response based on the last user message.
         """
-        if self.provider == "mock":
-            return self._mock_response(system, messages, user, refusal_prompt, mode)
 
-        # Placeholder for real integrations:
-        # - call your provider SDK
-        # - pass system + messages + user
-        # - return text
-        raise NotImplementedError(
-            "Non-mock provider not configured. Edit src/llm_provider.py to add your LLM call."
-        )
+        user_message = ""
 
-    def _mock_response(
-        self, system: str, messages: List[Dict[str, str]], user: str, refusal_prompt: str, mode: str
-    ) -> str:
-        if mode == "refusal":
-            return (
-                "I can’t help with that request.\n"
-                "Reason: it appears to violate a course policy for safe/ethical behavior.\n"
-                "Safe alternatives: I can explain the risks, provide defensive best practices, or help reframe the task."
-            )
+        for m in reversed(messages):
+            if m["role"] == "user":
+                user_message = m["content"]
+                break
 
-        # Simple “agent-like” behavior for offline testing
-        if "summarize" in user.lower():
-            return "Summary (mock): I can summarize once you paste the text or describe the source."
-        if "recommend" in user.lower():
-            return "Recommendation (mock): Tell me your goal + constraints, and I’ll suggest options."
-        return "Response (mock): I understand. Say 'summarize', 'recommend', or ask a specific question."
+        responses = [
+            "Your argument is generally clear, but you may want to strengthen the supporting explanation.",
+            "The paragraph introduces an interesting idea, but the thesis could be stated more explicitly.",
+            "Your writing is concise and readable. Consider adding an example to strengthen the argument.",
+            "The structure is logical, though some sentences could be clarified to improve flow."
+        ]
+
+        feedback = random.choice(responses)
+
+        return f"""
+Clarity Assessment
+{feedback}
+
+Strengths
+- The topic is introduced clearly
+- The writing is concise
+
+Areas for Improvement
+- The central claim could be more explicit
+- Additional supporting detail may help strengthen the argument
+
+Suggested Improvements
+- Consider stating your thesis more directly
+- Provide an example to support your claim
+
+Clarity Rating
+7/10
+"""
+
